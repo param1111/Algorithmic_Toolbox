@@ -2,53 +2,49 @@ import java.util.*;
 
 public class Knapsack {
     static int optimalWeight(int W, int[] w) {
-        int num_items = 0;
-        for (int item : w) {
-            if (item <= W)
-                num_items++;
-        }
-        int[] items = new int[num_items];
-        int index = 0;
-        for (int i = 0; i < w.length - 1; i++) {
-            if (w[i] <= W) {
-                items[index] = w[i];
-                index++;
-            }
-        }
 
-        int capacity = W + 1;
+        // Max value derived from Knapsack Capacity W by using items i to w.length;
+        int [][] MAX = new int [W + 1][w.length + 1];
 
-        int K[][] = new int[items.length + 1][capacity];
+        // OPTIMAL SUBPROBLEM -> 2 Choices Either Keep Ith item or NOT
+        // IF Keep Ith Item => Max Value = MaxValue[W - w[i]][i-1] + v[i]; i -> i -1 Reduce W -> W -w[i]
+        // IF NOT KEEP Ith item => Max Value = MaxValue[W][i-1] ie i -> i-1 W -> W (same)
 
-        for (int col = 0; col <= W; col++) {
-            K[0][col] = 0;
-        }
 
-        for (int row = 0; row <= items.length; row++) {
-            K[row][0] = 0;
-        }
+        for (int weight = 0; weight <= W; weight++) {
+            for (int i = 0; i<= w.length; i++) {
 
-        for (int item = 1; item <= items.length; item++) {
-            for (int weight = 1; weight <= W; weight++) {
-                if (items[item - 1] <= weight) {
-                    K[item][weight] = Math.max(items[item - 1] + K[item - 1][weight - items[item - 1]],
-                            K[item - 1][weight]);
+                if (i == 0 || weight == 0) {
+                    // Item 0 or weight 0
+                    MAX[weight][i] = 0;
                 } else {
-                    K[item][weight] = K[item - 1][weight];
+                    int dontUseIthItem = MAX[weight][i-1];
+
+                    // Maximising Problem -> Need to Set to - INFINITY
+                    int useIthItem = Integer.MIN_VALUE;
+
+                    // Check if there is enough weight for ith Item
+                    // ith Item's weight is w[i-1]
+                    if (weight - w[i-1] >= 0) {
+                        useIthItem = MAX[weight - w[i-1]][i-1] + w[i-1];
+                    }
+
+                    MAX[weight][i] = Math.max(useIthItem, dontUseIthItem);
                 }
             }
         }
-        return K[items.length + 1][capacity];
+
+        return MAX[W][w.length];
     }
 
     public static void main(String[] args) {
-        Scanner scanner = new Scanner(System.in);
+        Scanner in = new Scanner(System.in);
         int W, n;
-        W = scanner.nextInt();
-        n = scanner.nextInt();
+        W = in.nextInt();
+        n = in.nextInt();
         int[] w = new int[n];
         for (int i = 0; i < n; i++) {
-            w[i] = scanner.nextInt();
+            w[i] = in.nextInt();
         }
         System.out.println(optimalWeight(W, w));
     }
